@@ -9,20 +9,20 @@ const closeModal = () =>{
 }
 
 
-const getLocalStorage = () => JSON.parse(localStorage.getItem('db_Client')) ?? []
-const setLocalStorage = (db_Client) => localStorage.setItem('db_Client', JSON.stringify(db_Client))
+const getLocalStorage = () => JSON.parse(localStorage.getItem('dbClient')) ?? []
+const setLocalStorage = (dbClient) => localStorage.setItem('dbClient', JSON.stringify(dbClient))
 
 //delete
 const deleteClient = (index) => {
-    const db_Client =  readClient()
-    db_Client.splice(index, 1)
-    setLocalStorage(db_Client)
+    const dbClient =  readClient()
+    dbClient.splice(index, 1)
+    setLocalStorage(dbClient)
 }
 //uptade
 const updateClient = (index, Client) => {
-    const db_Client = readClient()
-    db_Client[index] = Client
-    setLocalStorage(db_Client)
+    const dbClient = readClient()
+    dbClient[index] = Client
+    setLocalStorage(dbClient)
 }
 
 //read
@@ -30,9 +30,9 @@ const readClient = () => getLocalStorage()
 
 //Create
 const createClient = (Client) => {
-    const db_Client = getLocalStorage()
-    db_Client.push (Client)
-    setLocalStorage(db_Client)
+    const dbClient = getLocalStorage()
+    dbClient.push (Client)
+    setLocalStorage(dbClient)
 }
 
 const isValidFields = () => {
@@ -48,14 +48,23 @@ const clearFields = () => {
 const salvarClient = () => {
     if (isValidFields()) {
         const Client = {
-            nome: document.getElementById('nome').Value,
-            email: document.getElementById('email').Value,
-            celular: document.getElementById('celular').Value,
-            cidade: document.getElementById('cidade').Value
+            nome: document.getElementById('nome').value,
+            email: document.getElementById('email').value,
+            celular: document.getElementById('celular').value,
+            cidade: document.getElementById('cidade').value
 
         }
-        createClient(Client)
-        closeModal()
+        const index = document.getElementById('nome').dataset.index
+        if (index == 'new'){
+            createClient(Client)
+            updateTable()
+            closeModal()
+        } else {
+            updateClient(index, Client)
+            updateTable()
+            closeModal()
+        }
+        
     }
 }
 
@@ -79,20 +88,22 @@ const clearTable = () => {
     rows.forEach(row => row.parentNode.removeChild(row))
 }
 const updateTable = () => {
-    const db_Client = readClient()
+    const dbClient = readClient()
     clearTable()
-    db_Client.forEach(createRow)
+    dbClient.forEach(createRow)
 }
 
-const fillFields = (client) =>{
+const fillFields = (client) => {
     document.getElementById('nome').value = client.nome
     document.getElementById('email').value = client.email
     document.getElementById('celular').value = client.celular
     document.getElementById('cidade').value = client.cidade
+    document.getElementById('nome').dataset.index = client.index
 }
 
-const editClient = (index) =>{
+const editClient = (index) => {
     const client = readClient()[index]
+    client.index = index
     fillFields(client)
     openModal()
 }
@@ -107,7 +118,13 @@ const editDelete = (event) => {
             editClient(index)
 
          }else{
-            console.log("delete")
+                const client = readClient()[index]
+                const response = confirm('Excluir cliente ${client.nome}')
+                if (response) {
+                    deleteClient(index)
+                    updateTable()
+                }
+                
         }
     }
     
